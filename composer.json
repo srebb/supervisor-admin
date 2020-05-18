@@ -1,0 +1,25 @@
+{
+    "name": "srebb/supervisor-bundle",
+    "license": "MIT",
+    "type": "symfony-bundle",
+    "description": "Fast adminpanel for supervisor",
+    "require": {
+        "guzzlehttp/guzzle": "^6.5",
+        "laminas/laminas-diactoros": "^2.3",
+        "lstrojny/fxmlrpc": "^0.15.0",
+        "php-http/guzzle6-adapter": "^2.0",
+        "php-http/message": "^1.8",
+        "php-http/message-factory": "^1.0",
+        "supervisorphp/supervisor": "^3.0",
+        "symfony/twig-bundle": "4.4.*",
+        "sensio/framework-extra-bundle": "^5.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "Srebb\\Bundle\\SupervisorBundle\\": "src/"
+        },
+        "exclude-from-classmap": [
+            "/tests/"
+        ]
+    }
+}

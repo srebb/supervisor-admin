@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+        <title>Adminpanel for supervisor</title>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+            {% for server in serverStack %}
+                <div id="server_card_{{ server.getNameHash() }}" class="card col-3">
+                    <ul class="list-group">
+                        <li class="list-group-item list-group-item-success">${serverName}</li>
+                        <li class="list-group-item" v-for="consumer in consumerlist">
+                            ${consumer.group}:${consumer.name}
+                            <span v-if="consumer.state == 0" class="badge badge-success badge-dark" style="float:right">${consumer.statename}</span>
+                            <span v-if="consumer.state == 10" class="badge badge-success badge-warning" style="float:right">${consumer.statename}</span>
+                            <span v-if="consumer.state == 20" class="badge badge-success badge-secondary" style="float:right">${consumer.statename}</span>
+                        </li>
+                    </ul>
+                </div>
+            {% endfor %}
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/vue"></script>
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+
+        <script type="text/javascript">
+            {% for server in serverStack %}
+            var server_card_{{ server.getNameHash() }} = new Vue({
+                delimiters: ['${', '}'],
+                el: '#server_card_{{ server.getNameHash() }}',
+                data: {
+                    serverName: '{{ server.getServerName() }}',
+                    nameHash: '{{ server.getNameHash() }}',
+                    consumerlist: []
+                },
+                methods: {
+                    getConsumerList() {
+                        axios.get('api/consumerlist/{{ server.getNameHash() }}').then(response => {
+                            this.consumerlist = response.data;
+                            setTimeout(this.getConsumerList, 1000);
+                        });
+                    }
+                }
+            })
+
+            server_card_{{ server.getNameHash() }}.getConsumerList();
+            {% endfor %}
+        </script>
+    </body>
+</html>

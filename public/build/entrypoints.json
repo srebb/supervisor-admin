@@ -1,0 +1,13 @@
+{
+  "entrypoints": {
+    "srebb_supervisor_app": {
+      "js": [
+        "/build/runtime.js",
+        "/build/srebb_supervisor_app.js"
+      ],
+      "css": [
+        "/build/srebb_supervisor_app.css"
+      ]
+    }
+  }
+}
