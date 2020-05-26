@@ -38,7 +38,7 @@ class ServerController extends AbstractController
     /**
      * @Route("/api/server/{nameHash}/startAll", methods={"POST"}, requirements={"nameHash"="[a-z0-9]{32}"})
      */
-    public function postSartAll(string $nameHash)
+    public function postStartAll(string $nameHash)
     {
         /** @var ServerContainer $serverContainer */
         $serverContainer = $this->get('srebb_supervisor.server_container');
@@ -46,5 +46,59 @@ class ServerController extends AbstractController
         $server = $serverContainer->getServerByNameHash($nameHash);
 
         return new JsonResponse($server->startAllProcesses());
+    }
+
+    /**
+     * @Route("/api/server/{nameHash}/restartAll", methods={"POST"}, requirements={"nameHash"="[a-z0-9]{32}"})
+     */
+    public function postRestartAll(string $nameHash)
+    {
+        /** @var ServerContainer $serverContainer */
+        $serverContainer = $this->get('srebb_supervisor.server_container');
+
+        $server = $serverContainer->getServerByNameHash($nameHash);
+
+        $server->stopAllProcesses();
+        return new JsonResponse($server->startAllProcesses());
+    }
+
+    /**
+     * @Route("/api/server/{nameHash}/stop/{consumerName}", methods={"POST"}, requirements={"nameHash"="[a-z0-9]{32}"})
+     */
+    public function postStop(string $nameHash, string $consumerName)
+    {
+        /** @var ServerContainer $serverContainer */
+        $serverContainer = $this->get('srebb_supervisor.server_container');
+
+        $server = $serverContainer->getServerByNameHash($nameHash);
+
+        return new JsonResponse($server->stopProcess($consumerName));
+    }
+
+    /**
+     * @Route("/api/server/{nameHash}/start/{consumerName}", methods={"POST"}, requirements={"nameHash"="[a-z0-9]{32}"})
+     */
+    public function postStart(string $nameHash, string $consumerName)
+    {
+        /** @var ServerContainer $serverContainer */
+        $serverContainer = $this->get('srebb_supervisor.server_container');
+
+        $server = $serverContainer->getServerByNameHash($nameHash);
+
+        return new JsonResponse($server->startProcess($consumerName));
+    }
+
+    /**
+     * @Route("/api/server/{nameHash}/restart/{consumerName}", methods={"POST"}, requirements={"nameHash"="[a-z0-9]{32}"})
+     */
+    public function postRestart(string $nameHash, string $consumerName)
+    {
+        /** @var ServerContainer $serverContainer */
+        $serverContainer = $this->get('srebb_supervisor.server_container');
+
+        $server = $serverContainer->getServerByNameHash($nameHash);
+
+        $server->stopProcess($consumerName);
+        return new JsonResponse($server->startProcess($consumerName));
     }
 }

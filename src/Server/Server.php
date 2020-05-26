@@ -94,4 +94,14 @@ class Server
     {
         return $this->supervisor->startAllProcesses();
     }
+
+    public function stopProcess($processName)
+    {
+        return $this->supervisor->stopProcess($processName);
+    }
+
+    public function startProcess($processName)
+    {
+        return $this->supervisor->startProcess($processName);
+    }
 }
