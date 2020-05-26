@@ -8,25 +8,75 @@
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
         <title>Adminpanel for supervisor</title>
+        <style type="text/css">
+            .card {
+                border:none;
+            }
+
+            .table {
+                margin-bottom: 0;
+            }
+
+            .table tr:first-child td, .table tr:first-child th {
+                border-top: 0;
+            }
+
+            .table tr:hover {
+                background: #777777;
+            }
+        </style>
     </head>
     <body>
         <div class="container-fluid">
             <div class="row">
             {% for server in serverStack %}
-                <div id="server_card_{{ server.getNameHash() }}" class="card col-3">
+                <div id="server_card_{{ server.getNameHash() }}" class="card col-6">
                     <ul class="list-group">
-                        <li class="list-group-item list-group-item-success">${serverName}</li>
-                        <li class="list-group-item" v-for="consumer in consumerlist">
-                            ${consumer.group}:${consumer.name}
-                            <span v-if="consumer.state == 0" class="badge badge-success badge-dark" style="float:right">${consumer.statename}</span>
-                            <span v-if="consumer.state == 10" class="badge badge-success badge-warning" style="float:right">${consumer.statename}</span>
-                            <span v-if="consumer.state == 20" class="badge badge-success badge-secondary" style="float:right">${consumer.statename}</span>
+                        <li class="list-group-item list-group-item-success">${serverName}
+                            <span class="badge badge-success badge-danger" style="float:right" v-on:click="stopAll">STOP ALL</span>
+                            <span class="badge badge-success badge-success" style="float:right" v-on:click="startAll">START ALL</span>
                         </li>
+                        <li class="list-group-item">
+                            <table class="table">
+                                <tbody>
+                                    <tr v-for="consumer in consumerlist">
+                                        <th scope="row">${consumer.group}:${consumer.name}</th>
+                                        <td>
+                                            <span v-if="consumer.state == 0" class="badge badge-success badge-dark" style="float:right">${consumer.statename}</span>
+                                            <span v-if="consumer.state == 10" class="badge badge-success badge-warning" style="float:right">${consumer.statename}</span>
+                                            <span v-if="consumer.state == 20" class="badge badge-success badge-secondary" style="float:right">${consumer.statename}</span>
+                                        </td>
+                                        <td style="text-align:right;">
+                                            <span v-if="consumer.state == 20" class="far fa-stop-circle"></span>
+                                            <span v-if="consumer.state == 10" class="far fa-play-circle"></span>
+                                            <span class="fas fa-redo"></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </li>
+
+
+
+{#                        <li class="list-group-item" v-for="consumer in consumerlist">#}
+{#                            <div class="col-4">${consumer.group}:${consumer.name}</div>#}
+{#                            <span v-if="consumer.state == 0" class="badge badge-success badge-dark" style="float:right">${consumer.statename} 0</span>#}
+{#                            <span v-if="consumer.state == 10" class="badge badge-success badge-warning" style="float:right">${consumer.statename} 10</span>#}
+{#                            <div v-if="consumer.state == 20" class="col-4">#}
+{#                                <span class="badge badge-success badge-secondary" style="float:right">${consumer.statename} 20</span>#}
+{#                                <span class="badge badge-success badge-danger" style="float:right">STOP</span>#}
+{#                                <span class="far fa-stop-circle" alt="stop"></span>#}
+{#                                <span class="far fa-play-circle"></span>#}
+{#                                <span class="fas fa-redo"></span>#}
+{#                            </div>#}
+{#                        </li>#}
                     </ul>
                 </div>
             {% endfor %}
             </div>
         </div>
+
+        <script src="https://kit.fontawesome.com/3604bf3dd5.js" crossorigin="anonymous"></script>
 
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
@@ -47,7 +97,19 @@
                 },
                 methods: {
                     getConsumerList() {
-                        axios.get('api/consumerlist/{{ server.getNameHash() }}').then(response => {
+                        axios.get('api/server/{{ server.getNameHash() }}/consumerList').then(response => {
+                            this.consumerlist = response.data;
+                            setTimeout(this.getConsumerList, 1000);
+                        });
+                    },
+                    stopAll() {
+                        axios.post('api/server/{{ server.getNameHash() }}/stopAll').then(response => {
+                            this.consumerlist = response.data;
+                            setTimeout(this.getConsumerList, 1000);
+                        });
+                    },
+                    startAll() {
+                        axios.post('api/server/{{ server.getNameHash() }}/startAll').then(response => {
                             this.consumerlist = response.data;
                             setTimeout(this.getConsumerList, 1000);
                         });

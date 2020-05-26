@@ -25,11 +25,35 @@ class Server
      */
     private $host;
 
+    /**
+     * @var Supervisor
+     */
+    private $supervisor;
+
     public function __construct(string $serverName, array $serverData)
     {
         $this->serverName = $serverName;
         $this->nameHash   = md5($serverName);
         $this->host       = $serverData['host'];
+
+        $this->supervisor = $this->createSupervisor();
+    }
+
+    private function createSupervisor()
+    {
+        $guzzleClient = new GuzzleClient();
+
+        $client = new Client(
+            sprintf('http://%s:9001/RPC2', $this->host),
+            new HttpAdapterTransport(
+                new DiactorosMessageFactory(),
+                new Guzzle6Client($guzzleClient)
+            )
+        );
+
+        $connector = new XmlRpc($client);
+
+        return new Supervisor($connector);
     }
 
     /**
@@ -58,20 +82,16 @@ class Server
 
     public function getAllProcessInfo()
     {
-        $guzzleClient = new GuzzleClient();
+        return $this->supervisor->getAllProcessInfo();
+    }
 
-        $client = new Client(
-            sprintf('http://%s:9001/RPC2', $this->host),
-            new HttpAdapterTransport(
-                new DiactorosMessageFactory(),
-                new Guzzle6Client($guzzleClient)
-            )
-        );
+    public function stopAllProcesses()
+    {
+        return $this->supervisor->stopAllProcesses();
+    }
 
-        $connector = new XmlRpc($client);
-
-        $supervisor = new Supervisor($connector);
-
-        return $supervisor->getAllProcessInfo();
+    public function startAllProcesses()
+    {
+        return $this->supervisor->startAllProcesses();
     }
 }

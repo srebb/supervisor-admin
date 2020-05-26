@@ -1,5 +1,5 @@
 {
-    "name": "srebb/supervisor-bundle",
+    "name": "srebb/supervisor-admin",
     "license": "MIT",
     "type": "symfony-bundle",
     "description": "Fast adminpanel for supervisor",
