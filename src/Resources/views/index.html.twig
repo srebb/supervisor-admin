@@ -24,6 +24,14 @@
             .table tr:hover {
                 background: #777777;
             }
+
+            .control-badge {
+                margin-left: 5px;
+            }
+
+            .control-badge:hover {
+                cursor: pointer;
+            }
         </style>
     </head>
     <body>
@@ -33,23 +41,26 @@
                 <div id="server_card_{{ server.getNameHash() }}" class="card col-6">
                     <ul class="list-group">
                         <li class="list-group-item list-group-item-success">${serverName}
-                            <span class="badge badge-success badge-danger" style="float:right" v-on:click="stopAll">STOP ALL</span>
-                            <span class="badge badge-success badge-success" style="float:right" v-on:click="startAll">START ALL</span>
+                            <span class="badge badge-success badge-danger control-badge" style="float:right" v-on:click="restartAll"><span class="fas fa-redo"></span> Restart all</span>
+                            <span class="badge badge-success badge-success control-badge" style="float:right" v-on:click="startAll"><span class="far fa-play-circle"></span> Start all</span>
+                            <span class="badge badge-success badge-dark control-badge" style="float:right" v-on:click="stopAll"><span class="far fa-stop-circle"></span> Stop all</span>
                         </li>
                         <li class="list-group-item">
                             <table class="table">
                                 <tbody>
                                     <tr v-for="consumer in consumerlist">
-                                        <th scope="row">${consumer.group}:${consumer.name}</th>
+                                        <th scope="row"><span class="consumer-identifier">${consumer.group}:${consumer.name}</span></th>
                                         <td>
-                                            <span v-if="consumer.state == 0" class="badge badge-success badge-dark" style="float:right">${consumer.statename}</span>
-                                            <span v-if="consumer.state == 10" class="badge badge-success badge-warning" style="float:right">${consumer.statename}</span>
-                                            <span v-if="consumer.state == 20" class="badge badge-success badge-secondary" style="float:right">${consumer.statename}</span>
+                                            <span v-if="consumer.state == 0" class="badge badge-success badge-dark" style="float:right">${consumer.statename}</span> {#stopped#}
+                                            <span v-else-if="consumer.state == 10" class="badge badge-success badge-warning" style="float:right">${consumer.statename}</span> {#starting#}
+                                            <span v-else-if="consumer.state == 20" class="badge badge-success badge-secondary" style="float:right">${consumer.statename}</span> {#running#}
+                                            <span v-else-if="consumer.state == 40" class="badge badge-success badge-secondary" style="float:right">${consumer.statename}</span> {#stopping#}
+                                            <span v-else class="badge badge-success badge-secondary" style="float:right">${consumer.statename} - ${consumer.state}</span>{#pls implement if you see this#}
                                         </td>
                                         <td style="text-align:right;">
-                                            <span v-if="consumer.state == 20" class="far fa-stop-circle"></span>
-                                            <span v-if="consumer.state == 10" class="far fa-play-circle"></span>
-                                            <span class="fas fa-redo"></span>
+                                            <span v-if="consumer.state == 20" class="far fa-stop-circle" v-on:click="stop(consumer.group + ':' + consumer.name)"></span>
+                                            <span v-if="consumer.state == 0" class="far fa-play-circle" v-on:click="start(consumer.group + ':' + consumer.name)"></span>
+                                            <span class="fas fa-redo" v-on:click="restart(consumer.group + ':' + consumer.name)"></span>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -103,16 +114,22 @@
                         });
                     },
                     stopAll() {
-                        axios.post('api/server/{{ server.getNameHash() }}/stopAll').then(response => {
-                            this.consumerlist = response.data;
-                            setTimeout(this.getConsumerList, 1000);
-                        });
+                        axios.post('api/server/{{ server.getNameHash() }}/stopAll').then(response => {});
                     },
                     startAll() {
-                        axios.post('api/server/{{ server.getNameHash() }}/startAll').then(response => {
-                            this.consumerlist = response.data;
-                            setTimeout(this.getConsumerList, 1000);
-                        });
+                        axios.post('api/server/{{ server.getNameHash() }}/startAll').then(response => {});
+                    },
+                    restartAll() {
+                        axios.post('api/server/{{ server.getNameHash() }}/restartAll').then(response => {});
+                    },
+                    stop(consumerName) {
+                        axios.post('api/server/{{ server.getNameHash() }}/stop/' + consumerName).then(response => {});
+                    },
+                    start(consumerName) {
+                        axios.post('api/server/{{ server.getNameHash() }}/start/' + consumerName).then(response => {});
+                    },
+                    restart(consumerName) {
+                        axios.post('api/server/{{ server.getNameHash() }}/restart/' + consumerName).then(response => {});
                     }
                 }
             })
