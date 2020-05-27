@@ -80,6 +80,11 @@ class Server
         return $this->host;
     }
 
+    public function getSupervisorVersion(): string
+    {
+        return $this->supervisor->getSupervisorVersion();
+    }
+
     public function getAllProcessInfo()
     {
         return $this->supervisor->getAllProcessInfo();

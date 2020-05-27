@@ -24,19 +24,22 @@ srebb_supervisor:
 ##
 
 ### Featurerequests 
-Make the curl timeout configurable
-##
-Short curl timeout on first request, longer timeout on further requests.
+- Make the curl timeout configurable
+- Short curl timeout on first request, longer timeout on further requests.
 This makes sure, the page loads fast on init, even if some servers are down.
-##
-Use wildcard subdomains if requested by config. This speeds up quite much.
+
+- show process uptime
+- show logs
+- show passed time since last refresh (per server)
+- stop / start / restart groups
+- show pending actions. Usefull if the refreshrate is low
+- Allow symfony 3 and 5
+- Use wildcard subdomains if requested by config. This speeds up quite much.
+
 ```
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, PUT, POST, DELETE, OPTIONS');
 ``` 
-##
-handle request error
-##
-add tests
-##
-check servicelocator
+- handle request error
+- add tests
+- check servicelocator

@@ -10,7 +10,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ServerController extends AbstractController
 {
     /**
-     * @Route("/api/server/{nameHash}/consumerList", methods={"GET"}, requirements={"nameHash"="[a-z0-9]{32}"})
+     * @Route("/api/server/{nameHash}/consumerlist", methods={"GET"}, requirements={"nameHash"="[a-z0-9]{32}"})
      */
     public function getConsumerList(string $nameHash)
     {
@@ -20,6 +20,19 @@ class ServerController extends AbstractController
         $server = $serverContainer->getServerByNameHash($nameHash);
 
         return new JsonResponse($server->getAllProcessInfo());
+    }
+
+    /**
+     * @Route("/api/server/{nameHash}/supervisorversion", methods={"GET"}, requirements={"nameHash"="[a-z0-9]{32}"})
+     */
+    public function getSupervisorVersion(string $nameHash)
+    {
+        /** @var ServerContainer $serverContainer */
+        $serverContainer = $this->get('srebb_supervisor.server_container');
+
+        $server = $serverContainer->getServerByNameHash($nameHash);
+
+        return new JsonResponse($server->getSupervisorVersion());
     }
 
     /**

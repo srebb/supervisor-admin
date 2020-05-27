@@ -9,6 +9,10 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
         <title>Adminpanel for supervisor</title>
         <style type="text/css">
+            [v-cloak] {
+                display: none;
+            }
+
             .card {
                 border:none;
             }
@@ -38,24 +42,25 @@
         <div class="container-fluid">
             <div class="row">
             {% for server in serverStack %}
-                <div id="server_card_{{ server.getNameHash() }}" class="card col-6">
+                <div id="server_card_{{ server.getNameHash() }}" class="card col-6" v-cloak>
                     <ul class="list-group">
-                        <li class="list-group-item list-group-item-success">${serverName}
+                        <li class="list-group-item" v-bind:class="[isOnline ? 'list-group-item-success' : 'list-group-item-danger']">${serverName} <span v-if="serverVersion" class="badge badge-pill badge-primary">${serverVersion}</span>
                             <span class="badge badge-success badge-danger control-badge" style="float:right" v-on:click="restartAll"><span class="fas fa-redo"></span> Restart all</span>
                             <span class="badge badge-success badge-success control-badge" style="float:right" v-on:click="startAll"><span class="far fa-play-circle"></span> Start all</span>
                             <span class="badge badge-success badge-dark control-badge" style="float:right" v-on:click="stopAll"><span class="far fa-stop-circle"></span> Stop all</span>
                         </li>
-                        <li class="list-group-item">
+                        <li class="list-group-item" v-cloak>
                             <table class="table">
                                 <tbody>
-                                    <tr v-for="consumer in consumerlist">
+                                    <tr v-for="consumer in consumerList">
                                         <th scope="row"><span class="consumer-identifier">${consumer.group}:${consumer.name}</span></th>
                                         <td>
-                                            <span v-if="consumer.state == 0" class="badge badge-success badge-dark" style="float:right">${consumer.statename}</span> {#stopped#}
-                                            <span v-else-if="consumer.state == 10" class="badge badge-success badge-warning" style="float:right">${consumer.statename}</span> {#starting#}
-                                            <span v-else-if="consumer.state == 20" class="badge badge-success badge-secondary" style="float:right">${consumer.statename}</span> {#running#}
-                                            <span v-else-if="consumer.state == 40" class="badge badge-success badge-secondary" style="float:right">${consumer.statename}</span> {#stopping#}
-                                            <span v-else class="badge badge-success badge-secondary" style="float:right">${consumer.statename} - ${consumer.state}</span>{#pls implement if you see this#}
+                                            <span v-if="consumer.state == 0" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#stopped#}
+                                            <span v-else-if="consumer.state == 10" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#starting#}
+                                            <span v-else-if="consumer.state == 20" class="badge badge-success" style="float:right">${consumer.statename}</span> {#running#}
+                                            <span v-else-if="consumer.state == 40" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#stopping#}
+                                            <span v-else-if="consumer.state == 100" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#exited#}
+                                            <span v-else class="badge badge-primary" style="float:right">${consumer.statename} - ${consumer.state}</span>{#pls implement if you see this#}
                                         </td>
                                         <td style="text-align:right;">
                                             <span v-if="consumer.state == 20" class="far fa-stop-circle" v-on:click="stop(consumer.group + ':' + consumer.name)"></span>
@@ -66,21 +71,6 @@
                                 </tbody>
                             </table>
                         </li>
-
-
-
-{#                        <li class="list-group-item" v-for="consumer in consumerlist">#}
-{#                            <div class="col-4">${consumer.group}:${consumer.name}</div>#}
-{#                            <span v-if="consumer.state == 0" class="badge badge-success badge-dark" style="float:right">${consumer.statename} 0</span>#}
-{#                            <span v-if="consumer.state == 10" class="badge badge-success badge-warning" style="float:right">${consumer.statename} 10</span>#}
-{#                            <div v-if="consumer.state == 20" class="col-4">#}
-{#                                <span class="badge badge-success badge-secondary" style="float:right">${consumer.statename} 20</span>#}
-{#                                <span class="badge badge-success badge-danger" style="float:right">STOP</span>#}
-{#                                <span class="far fa-stop-circle" alt="stop"></span>#}
-{#                                <span class="far fa-play-circle"></span>#}
-{#                                <span class="fas fa-redo"></span>#}
-{#                            </div>#}
-{#                        </li>#}
                     </ul>
                 </div>
             {% endfor %}
@@ -104,14 +94,31 @@
                 data: {
                     serverName: '{{ server.getServerName() }}',
                     nameHash: '{{ server.getNameHash() }}',
-                    consumerlist: []
+                    consumerList: [],
+                    serverVersion: null,
+                    isOnline: false,
                 },
                 methods: {
+                    setup() {
+                        this.getConsumerList();
+                        this.getSupervisorVersion();
+                    },
                     getConsumerList() {
-                        axios.get('api/server/{{ server.getNameHash() }}/consumerList').then(response => {
-                            this.consumerlist = response.data;
+                        axios.get('api/server/{{ server.getNameHash() }}/consumerlist').then(response => {
+                            this.consumerList = response.data;
+                            this.isOnline = true;
                             setTimeout(this.getConsumerList, 1000);
+                        })
+                        .catch(function (error) {
+                            this.isOnline = false;
+                            setTimeout(this.getConsumerList, 1000);
+                            setTimeout(this.getSupervisorVersion, 1000);
                         });
+                    },
+                    getSupervisorVersion() {
+                        axios.get('api/server/{{ server.getNameHash() }}/supervisorversion').then(response => {
+                            this.serverVersion = response.data;
+                        })
                     },
                     stopAll() {
                         axios.post('api/server/{{ server.getNameHash() }}/stopAll').then(response => {});
@@ -130,11 +137,11 @@
                     },
                     restart(consumerName) {
                         axios.post('api/server/{{ server.getNameHash() }}/restart/' + consumerName).then(response => {});
-                    }
+                    },
                 }
             })
 
-            server_card_{{ server.getNameHash() }}.getConsumerList();
+            server_card_{{ server.getNameHash() }}.setup();
             {% endfor %}
         </script>
     </body>
