@@ -92,7 +92,12 @@ class Server
 
     public function stopAllProcesses()
     {
-        return $this->supervisor->stopAllProcesses();
+        try {
+            $result = $this->supervisor->stopAllProcesses();
+        } catch (\Exception $e) {
+            return false;
+        }
+        return $result;
     }
 
     public function startAllProcesses()
@@ -102,6 +107,13 @@ class Server
 
     public function stopProcess($processName)
     {
+        try {
+            $result = $this->supervisor->stopProcess($processName);
+        } catch (\Exception $e) {
+            return false;
+        }
+        return $result;
+
         return $this->supervisor->stopProcess($processName);
     }
 
