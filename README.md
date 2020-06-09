@@ -33,6 +33,7 @@ This makes sure, the page loads fast on init, even if some servers are down.
 - show passed time since last refresh (per server)
 - stop / start / restart groups
 - show pending actions. Usefull if the refreshrate is low
+- bind to path via env?
 - Allow symfony 3 and 5
 - Use wildcard subdomains if requested by config. This speeds up quite much.
 
