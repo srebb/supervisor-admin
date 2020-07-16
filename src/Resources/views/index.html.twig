@@ -55,9 +55,13 @@
                                     <tr v-for="consumer in consumerList">
                                         <th scope="row"><span class="consumer-identifier">${consumer.group}:${consumer.name}</span></th>
                                         <td>
+                                            ${consumer.description}
+                                        </td>
+                                        <td>
                                             <span v-if="consumer.state == 0" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#stopped#}
                                             <span v-else-if="consumer.state == 10" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#starting#}
                                             <span v-else-if="consumer.state == 20" class="badge badge-success" style="float:right">${consumer.statename}</span> {#running#}
+                                            <span v-else-if="consumer.state == 30" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#backoff#}
                                             <span v-else-if="consumer.state == 40" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#stopping#}
                                             <span v-else-if="consumer.state == 100" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#exited#}
                                             <span v-else-if="consumer.state == 200" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#fatal#}
@@ -94,25 +98,29 @@
                 },
                 methods: {
                     setup() {
-                        this.getConsumerList();
                         this.getSupervisorVersion();
                     },
                     getConsumerList() {
-                        axios.get('api/server/{{ server.getNameHash() }}/consumerlist').then(response => {
+                        axios.get('api/server/{{ server.getNameHash() }}/consumerlist')
+                        .then(response => {
                             this.consumerList = response.data;
                             this.isOnline = true;
                             setTimeout(this.getConsumerList, 1000);
                         })
-                        .catch(function (error) {
+                        .catch(e => {
                             this.isOnline = false;
-                            setTimeout(this.getConsumerList, 1000);
                             setTimeout(this.getSupervisorVersion, 1000);
                         });
                     },
                     getSupervisorVersion() {
-                        axios.get('api/server/{{ server.getNameHash() }}/supervisorversion').then(response => {
+                        axios.get('api/server/{{ server.getNameHash() }}/supervisorversion')
+                        .then(response => {
                             this.serverVersion = response.data;
+                            this.getConsumerList();
                         })
+                        .catch(e => {
+                            setTimeout(this.getSupervisorVersion, 3000);
+                        });
                     },
                     stopAll() {
                         axios.post('api/server/{{ server.getNameHash() }}/stopAll').then(response => {});
