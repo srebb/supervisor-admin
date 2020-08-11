@@ -28,7 +28,6 @@ srebb_supervisor:
 - Short curl timeout on first request, longer timeout on further requests.
 This makes sure, the page loads fast on init, even if some servers are down.
 
-- show process uptime
 - show logs
 - show passed time since last refresh (per server)
 - stop / start / restart groups
