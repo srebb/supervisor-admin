@@ -44,7 +44,7 @@
             {% for server in serverStack %}
                 <div id="server_card_{{ server.getNameHash() }}" class="card col-6" v-cloak>
                     <ul class="list-group">
-                        <li class="list-group-item" v-bind:class="[isOnline ? 'list-group-item-success' : 'list-group-item-danger']">${serverName} <span v-if="serverVersion" class="badge badge-pill badge-primary">${serverVersion}</span>
+                        <li class="list-group-item" v-bind:class="[isOnline ? 'list-group-item-success' : 'list-group-item-danger']">${serverName} <span v-if="serverVersion" class="badge badge-pill badge-primary">v ${serverVersion}</span>
                             <span class="badge badge-success badge-danger control-badge" style="float:right" v-on:click="restartAll"><span class="fas fa-redo"></span> Restart all</span>
                             <span class="badge badge-success badge-success control-badge" style="float:right" v-on:click="startAll"><span class="far fa-play-circle"></span> Start all</span>
                             <span class="badge badge-success badge-dark control-badge" style="float:right" v-on:click="stopAll"><span class="far fa-stop-circle"></span> Stop all</span>
