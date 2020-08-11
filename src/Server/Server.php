@@ -41,7 +41,7 @@ class Server
 
     private function createSupervisor()
     {
-        $guzzleClient = new GuzzleClient();
+        $guzzleClient = new GuzzleClient(['timeout' => 10]);
 
         $client = new Client(
             sprintf('http://%s:9001/RPC2', $this->host),
