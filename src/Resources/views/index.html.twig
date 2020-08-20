@@ -91,76 +91,146 @@
         {% include '@SrebbSupervisor/External/body_js.twig.html' %}
 
         <script type="text/javascript">
-            {% for server in serverStack %}
-            var server_card_{{ server.getNameHash() }} = new Vue({
-                delimiters: ['${', '}'],
-                el: '#server_card_{{ server.getNameHash() }}',
-                data: {
-                    serverName: '{{ server.getServerName() }}',
-                    nameHash: '{{ server.getNameHash() }}',
-                    consumerList: [],
-                    serverVersion: null,
-                    isOnline: false,
-                },
-                methods: {
-                    setup() {
-                        this.getSupervisorVersion();
-                    },
-                    getConsumerList() {
-                        axios.get('api/server/{{ server.getNameHash() }}/consumerlist')
-                        .then(response => {
-                            this.consumerList = response.data;
-                            this.isOnline = true;
-                            setTimeout(this.getConsumerList, 1000);
-                        })
-                        .catch(e => {
-                            this.isOnline = false;
-                            setTimeout(this.getSupervisorVersion, 1000);
-                        });
-                    },
-                    getSupervisorVersion() {
-                        axios.get('api/server/{{ server.getNameHash() }}/supervisorversion')
-                        .then(response => {
-                            this.serverVersion = response.data;
-                            this.getConsumerList();
-                        })
-                        .catch(e => {
-                            setTimeout(this.getSupervisorVersion, 3000);
-                        });
-                    },
-                    stopAll() {
-                        axios.post('api/server/{{ server.getNameHash() }}/stopAll').then(response => {});
-                    },
-                    startAll() {
-                        axios.post('api/server/{{ server.getNameHash() }}/startAll').then(response => {});
-                    },
-                    restartAll() {
-                        axios.post('api/server/{{ server.getNameHash() }}/restartAll').then(response => {});
-                    },
-                    stop(consumerName) {
-                        axios.post('api/server/{{ server.getNameHash() }}/stop/' + consumerName).then(response => {});
-                    },
-                    start(consumerName) {
-                        axios.post('api/server/{{ server.getNameHash() }}/start/' + consumerName).then(response => {});
-                    },
-                    restart(consumerName) {
-                        axios.post('api/server/{{ server.getNameHash() }}/restart/' + consumerName).then(response => {});
-                    },
-                    getLog(consumerName) {
-                        axios.get('api/server/{{ server.getNameHash() }}/getLog/' + consumerName).then(response => {
-                            console.log(response.data);
-                        });
-                    },
-                    getErrorLog(consumerName) {
-                        axios.get('api/server/{{ server.getNameHash() }}/getErrorLog/' + consumerName).then(response => {
-                            console.log(response.data);
-                        });
-                    },
+            class api {
+                /**
+                 * @param {String} hash
+                 */
+                constructor(hash) {
+                    this.hash = hash;
                 }
-            })
 
-            server_card_{{ server.getNameHash() }}.setup();
-            {% endfor %}
+                getConsumerList() {
+                    return axios.get('api/server/' + this.hash + '/consumerlist');
+                }
+
+                getSupervisorVersion() {
+                    return axios.get('api/server/' + this.hash + '/supervisorversion');
+                }
+                stopAll() {
+                    axios.post('api/server/' + this.hash + '/stopAll').then(response => {});
+                }
+
+                startAll() {
+                    axios.post('api/server/' + this.hash + '/startAll').then(response => {});
+                }
+
+                restartAll() {
+                    axios.post('api/server/' + this.hash + '/restartAll').then(response => {});
+                }
+
+                stop(consumerName) {
+                    axios.post('api/server/' + this.hash + '/stop/' + consumerName).then(response => {});
+                }
+
+                start(consumerName) {
+                    axios.post('api/server/' + this.hash + '/start/' + consumerName).then(response => {});
+                }
+
+                restart(consumerName) {
+                    axios.post('api/server/' + this.hash + '/restart/' + consumerName).then(response => {});
+                }
+
+                getLog(consumerName) {
+                    axios.get('api/server/' + this.hash + '/getLog/' + consumerName).then(response => {
+                        console.log(response.data);
+                    });
+                }
+
+                getErrorLog(consumerName) {
+                    axios.get('api/server/' + this.hash + '/getErrorLog/' + consumerName).then(response => {
+                        console.log(response.data);
+                    });
+                }
+            }
+
+            /**
+             * @param {Object} server
+             * @param {String} server.name
+             * @param {String} server.hash
+             *
+             * @return {Vue}
+             */
+            function createVueServer(server) {
+                return new Vue({
+                    delimiters: ['${', '}'],
+                    el: '#server_card_' + server.hash,
+                    data: {
+                        serverName: server.name,
+                        nameHash: server.hash,
+                        consumerList: [],
+                        serverVersion: null,
+                        isOnline: false,
+                        api: null
+                    },
+                    methods: {
+                        setup() {
+                            this.api = new api(this.nameHash);
+                            this.getSupervisorVersion();
+                        },
+                        getConsumerList() {
+                            this.api.getConsumerList()
+                                .then(response => {
+                                    this.consumerList = response.data;
+                                    this.isOnline = true;
+                                    setTimeout(this.getConsumerList, 1000);
+                                })
+                                .catch(e => {
+                                    this.isOnline = false;
+                                    setTimeout(this.getSupervisorVersion, 1000);
+                                });
+                        },
+                        getSupervisorVersion() {
+                            this.api.getSupervisorVersion()
+                                .then(response => {
+                                    this.serverVersion = response.data;
+                                    this.getConsumerList();
+                                })
+                                .catch(e => {
+                                    setTimeout(this.getSupervisorVersion, 3000);
+                                });
+                        },
+                        stopAll() {
+                            this.api.stopAll();
+                        },
+                        startAll() {
+                            this.api.startAll();
+                        },
+                        restartAll() {
+                            this.api.restartAll();
+                        },
+                        stop(consumerName) {
+                            this.api.stop(consumerName);
+                        },
+                        start(consumerName) {
+                            this.api.start(consumerName);
+                        },
+                        restart(consumerName) {
+                            this.api.restart(consumerName);
+                        },
+                        getLog(consumerName) {
+                            this.api.getLog(consumerName);
+                        },
+                        getErrorLog(consumerName) {
+                            this.api.getErrorLog(consumerName);
+                        },
+                    }
+                })
+            }
+
+            let allServer = [];
+
+{% for server in serverStack %}
+            allServer.push({
+                name: '{{ server.getServerName() }}',
+                hash: '{{ server.getNameHash }}',
+            });
+{% endfor %}
+
+            allServer.forEach(function(server) {
+                let vueServer = createVueServer(server);
+                vueServer.setup();
+                window['server_card_' + server.name] = vueServer;
+            })
         </script>
     </body>
 </html>
