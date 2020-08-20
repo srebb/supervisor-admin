@@ -118,4 +118,40 @@ class ServerController extends AbstractController
         $server->stopProcess($consumerName);
         return new JsonResponse($server->startProcess($consumerName));
     }
+
+    /**
+     * @Route("/api/server/{nameHash}/getLog/{consumerName}", methods={"GET"}, requirements={"nameHash"="[a-z0-9]{32}"})
+     */
+    public function getConsumerLog(string $nameHash, string $consumerName)
+    {
+        /** @var ServerContainer $serverContainer */
+        $serverContainer = $this->get('srebb_supervisor.server_container');
+
+        $server = $serverContainer->getServerByNameHash($nameHash);
+
+        try {
+            $log = $server->getConsumerLog($consumerName);
+        } catch (\Exception $e) {
+            return new JsonResponse(['errorCode' => 404], 404);
+        }
+        return new JsonResponse($log);
+    }
+
+    /**
+     * @Route("/api/server/{nameHash}/getErrorLog/{consumerName}", methods={"GET"}, requirements={"nameHash"="[a-z0-9]{32}"})
+     */
+    public function getConsumerErrorLog(string $nameHash, string $consumerName)
+    {
+        /** @var ServerContainer $serverContainer */
+        $serverContainer = $this->get('srebb_supervisor.server_container');
+
+        $server = $serverContainer->getServerByNameHash($nameHash);
+
+        try {
+            $log = $server->getConsumerErrorLog($consumerName);
+        } catch (\Exception $e) {
+            return new JsonResponse(['errorCode' => 404], 404);
+        }
+        return new JsonResponse($log);
+    }
 }

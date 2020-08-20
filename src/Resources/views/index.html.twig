@@ -58,6 +58,12 @@
                                             ${consumer.description}
                                         </td>
                                         <td>
+                                            <div v-on:click="getLog(consumer.group + ':' + consumer.name)">${consumer.out_log}</div>
+                                        </td>
+                                        <td>
+                                            <div v-on:click="getErrorLog(consumer.group + ':' + consumer.name)">${consumer.err_log}</div>
+                                        </td>
+                                        <td>
                                             <span v-if="consumer.state == 0" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#stopped#}
                                             <span v-else-if="consumer.state == 10" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#starting#}
                                             <span v-else-if="consumer.state == 20" class="badge badge-success" style="float:right">${consumer.statename}</span> {#running#}
@@ -139,6 +145,16 @@
                     },
                     restart(consumerName) {
                         axios.post('api/server/{{ server.getNameHash() }}/restart/' + consumerName).then(response => {});
+                    },
+                    getLog(consumerName) {
+                        axios.get('api/server/{{ server.getNameHash() }}/getLog/' + consumerName).then(response => {
+                            console.log(response.data);
+                        });
+                    },
+                    getErrorLog(consumerName) {
+                        axios.get('api/server/{{ server.getNameHash() }}/getErrorLog/' + consumerName).then(response => {
+                            console.log(response.data);
+                        });
                     },
                 }
             })
