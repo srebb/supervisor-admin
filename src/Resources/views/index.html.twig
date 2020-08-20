@@ -39,56 +39,57 @@
         </style>
     </head>
     <body>
+        <div id="server_card_base" class="card col-md-12 col-lg-6 hidden" v-cloak>
+            <ul class="list-group">
+                <li class="list-group-item" v-bind:class="[isOnline ? 'list-group-item-success' : 'list-group-item-danger']">${serverName} <span v-if="serverVersion" class="badge badge-pill badge-primary">v ${serverVersion}</span>
+                    <span class="badge badge-success badge-danger control-badge" style="float:right" v-on:click="restartAll"><span class="fas fa-redo"></span> Restart all</span>
+                    <span class="badge badge-success badge-success control-badge" style="float:right" v-on:click="startAll"><span class="far fa-play-circle"></span> Start all</span>
+                    <span class="badge badge-success badge-dark control-badge" style="float:right" v-on:click="stopAll"><span class="far fa-stop-circle"></span> Stop all</span>
+                </li>
+                <li class="list-group-item" v-cloak>
+                    <table class="table">
+                        <tbody>
+                        <tr v-for="consumer in consumerList">
+                            <th scope="row"><span class="consumer-identifier">${consumer.group}:${consumer.name}</span></th>
+                            <td>
+                                ${consumer.description}
+                            </td>
+                            <td>
+                                <div v-on:click="getLog(consumer.group + ':' + consumer.name)">${consumer.out_log}</div>
+                            </td>
+                            <td>
+                                <div v-on:click="getErrorLog(consumer.group + ':' + consumer.name)">${consumer.err_log}</div>
+                            </td>
+                            <td>
+                                <span v-if="consumer.state == 0" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#stopped#}
+                                <span v-else-if="consumer.state == 10" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#starting#}
+                                <span v-else-if="consumer.state == 20" class="badge badge-success" style="float:right">${consumer.statename}</span> {#running#}
+                                <span v-else-if="consumer.state == 30" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#backoff#}
+                                <span v-else-if="consumer.state == 40" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#stopping#}
+                                <span v-else-if="consumer.state == 100" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#exited#}
+                                <span v-else-if="consumer.state == 200" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#fatal#}
+                                <span v-else class="badge badge-primary" style="float:right">${consumer.statename} - ${consumer.state}</span>{#pls implement if you see this#}
+                            </td>
+                            <td style="text-align:right;">
+                                <span v-if="[20].includes(consumer.state)" class="far fa-stop-circle" v-on:click="stop(consumer.group + ':' + consumer.name)"></span>
+                                <span v-if="[0].includes(consumer.state)" class="far fa-play-circle" v-on:click="start(consumer.group + ':' + consumer.name)"></span>
+                                <span class="fas fa-redo" v-on:click="restart(consumer.group + ':' + consumer.name)"></span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </li>
+            </ul>
+        </div>
+
         <div class="container-fluid">
-            <div class="row">
-            {% for server in serverStack %}
-                <div id="server_card_{{ server.getNameHash() }}" class="card col-6" v-cloak>
-                    <ul class="list-group">
-                        <li class="list-group-item" v-bind:class="[isOnline ? 'list-group-item-success' : 'list-group-item-danger']">${serverName} <span v-if="serverVersion" class="badge badge-pill badge-primary">v ${serverVersion}</span>
-                            <span class="badge badge-success badge-danger control-badge" style="float:right" v-on:click="restartAll"><span class="fas fa-redo"></span> Restart all</span>
-                            <span class="badge badge-success badge-success control-badge" style="float:right" v-on:click="startAll"><span class="far fa-play-circle"></span> Start all</span>
-                            <span class="badge badge-success badge-dark control-badge" style="float:right" v-on:click="stopAll"><span class="far fa-stop-circle"></span> Stop all</span>
-                        </li>
-                        <li class="list-group-item" v-cloak>
-                            <table class="table">
-                                <tbody>
-                                    <tr v-for="consumer in consumerList">
-                                        <th scope="row"><span class="consumer-identifier">${consumer.group}:${consumer.name}</span></th>
-                                        <td>
-                                            ${consumer.description}
-                                        </td>
-                                        <td>
-                                            <div v-on:click="getLog(consumer.group + ':' + consumer.name)">${consumer.out_log}</div>
-                                        </td>
-                                        <td>
-                                            <div v-on:click="getErrorLog(consumer.group + ':' + consumer.name)">${consumer.err_log}</div>
-                                        </td>
-                                        <td>
-                                            <span v-if="consumer.state == 0" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#stopped#}
-                                            <span v-else-if="consumer.state == 10" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#starting#}
-                                            <span v-else-if="consumer.state == 20" class="badge badge-success" style="float:right">${consumer.statename}</span> {#running#}
-                                            <span v-else-if="consumer.state == 30" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#backoff#}
-                                            <span v-else-if="consumer.state == 40" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#stopping#}
-                                            <span v-else-if="consumer.state == 100" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#exited#}
-                                            <span v-else-if="consumer.state == 200" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#fatal#}
-                                            <span v-else class="badge badge-primary" style="float:right">${consumer.statename} - ${consumer.state}</span>{#pls implement if you see this#}
-                                        </td>
-                                        <td style="text-align:right;">
-                                            <span v-if="[20].includes(consumer.state)" class="far fa-stop-circle" v-on:click="stop(consumer.group + ':' + consumer.name)"></span>
-                                            <span v-if="[0].includes(consumer.state)" class="far fa-play-circle" v-on:click="start(consumer.group + ':' + consumer.name)"></span>
-                                            <span class="fas fa-redo" v-on:click="restart(consumer.group + ':' + consumer.name)"></span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </li>
-                    </ul>
-                </div>
-            {% endfor %}
+            <div class="row" id="server_card_container">
             </div>
         </div>
 
         {% include '@SrebbSupervisor/External/body_js.twig.html' %}
+
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 
         <script type="text/javascript">
             class api {
@@ -144,6 +145,28 @@
             }
 
             /**
+             * @param {string} hash
+             */
+            function createNewHtml(hash) {
+                const $base = $('#server_card_base');
+                const $container = $('#server_card_container');
+
+                if ($base.length === 0) {
+                    throw new Error('can not find base template for server');
+                }
+
+                if ($container.length === 0) {
+                    throw new Error('can not find base server container');
+                }
+
+                let $clone = $base .clone();
+
+                $clone.attr('id', 'server_card_' + hash);
+
+                $clone.removeClass('tmp hidden').appendTo('#server_card_container');
+            }
+
+            /**
              * @param {Object} server
              * @param {String} server.name
              * @param {String} server.hash
@@ -151,6 +174,8 @@
              * @return {Vue}
              */
             function createVueServer(server) {
+                createNewHtml(server.hash);
+
                 return new Vue({
                     delimiters: ['${', '}'],
                     el: '#server_card_' + server.hash,
