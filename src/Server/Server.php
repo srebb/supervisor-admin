@@ -87,7 +87,23 @@ class Server
 
     public function getAllProcessInfo()
     {
-        return $this->supervisor->getAllProcessInfo();
+        $allProcessInfo = $this->supervisor->getAllProcessInfo();
+
+        foreach ($allProcessInfo as $key => $processInfo) {
+            $allProcessInfo[$key]['uptime_seconds'] = $processInfo['now'] - $processInfo['start'];
+
+            $description                           = $processInfo['description'] ?? [];
+            $descriptionParts                      = explode(',', $description);
+            $allProcessInfo[$key]['description_0'] = $descriptionParts[0] ?? '';
+            $allProcessInfo[$key]['description_1'] = $descriptionParts[1] ?? '';
+            $allProcessInfo[$key]['description_2'] = $descriptionParts[2] ?? '';
+            $allProcessInfo[$key]['out_log']       = $this->supervisor
+                ->tailProcessStdoutLog($processInfo['group'] . ':' . $processInfo['name'], 0, 0);
+            $allProcessInfo[$key]['err_log']       = $this->supervisor
+                ->tailProcessStderrLog($processInfo['group'] . ':' . $processInfo['name'], 0, 0);
+        }
+
+        return $allProcessInfo;
     }
 
     public function stopAllProcesses()
@@ -120,5 +136,15 @@ class Server
     public function startProcess($processName)
     {
         return $this->supervisor->startProcess($processName);
+    }
+
+    public function getConsumerLog(string $name, int $offset = -2000 , int $length = 2000)
+    {
+        return $this->supervisor->tailProcessStdoutLog($name, $offset, $length);
+    }
+
+    public function getConsumerErrorLog(string $name, int $offset = -2000 , int $length = 2000)
+    {
+        return $this->supervisor->tailProcessStderrLog($name, $offset, $length);
     }
 }
