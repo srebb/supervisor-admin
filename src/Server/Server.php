@@ -16,10 +16,12 @@ class Server
      * @var string
      */
     private $serverName;
+    
     /**
      * @var string
      */
     private $nameHash;
+    
     /**
      * @var string
      */
@@ -54,6 +56,16 @@ class Server
         $connector = new XmlRpc($client);
 
         return new Supervisor($connector);
+    }
+
+    public function getAsArray()
+    {
+        return [
+            'serverName' => $this->serverName,
+            'nameHash'   => $this->nameHash,
+            'host'       => $this->host,
+            'supervisor' => $this->supervisor,
+        ];
     }
 
     /**
