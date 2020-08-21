@@ -74,25 +74,23 @@
                                 ${consumer.description}
                             </td>
                             <td>
-                                <div v-on:click="getLog(consumer.group + ':' + consumer.name)">${consumer.out_log}</div>
+                                <span role="button" class="badge badge-success" v-if="consumer.out_log[2] === true" v-on:click="getLog(consumer.group + ':' + consumer.name)"><i class="fa fa-info-circle"></i> ${consumer.out_log[1]}</span>
+                                <span role="button" class="badge badge-danger" v-if="consumer.err_log[2] === true" v-on:click="getErrorLog(consumer.group + ':' + consumer.name)"><i class="fa fa-exclamation-circle"></i> ${consumer.err_log[1]}</span>
                             </td>
                             <td>
-                                <div v-on:click="getErrorLog(consumer.group + ':' + consumer.name)">${consumer.err_log}</div>
-                            </td>
-                            <td>
-                                <span v-if="consumer.state == 0" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#stopped#}
-                                <span v-else-if="consumer.state == 10" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#starting#}
-                                <span v-else-if="consumer.state == 20" class="badge badge-success" style="float:right">${consumer.statename}</span> {#running#}
-                                <span v-else-if="consumer.state == 30" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#backoff#}
-                                <span v-else-if="consumer.state == 40" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#stopping#}
-                                <span v-else-if="consumer.state == 100" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#exited#}
-                                <span v-else-if="consumer.state == 200" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#fatal#}
-                                <span v-else class="badge badge-primary" style="float:right">${consumer.statename} - ${consumer.state}</span>{#pls implement if you see this#}
+                                <span v-if="consumer.state == 0" class="user-select-none badge badge-dark">${consumer.statename}</span> {#stopped#}
+                                <span v-else-if="consumer.state == 10" class="user-select-none badge badge-warning">${consumer.statename}</span> {#starting#}
+                                <span v-else-if="consumer.state == 20" class="user-select-none badge badge-success">${consumer.statename}</span> {#running#}
+                                <span v-else-if="consumer.state == 30" class="user-select-none badge badge-dark">${consumer.statename}</span> {#backoff#}
+                                <span v-else-if="consumer.state == 40" class="user-select-none badge badge-warning">${consumer.statename}</span> {#stopping#}
+                                <span v-else-if="consumer.state == 100" class="user-select-none badge badge-dark">${consumer.statename}</span> {#exited#}
+                                <span v-else-if="consumer.state == 200" class="user-select-none badge badge-dark">${consumer.statename}</span> {#fatal#}
+                                <span v-else class="user-select-none badge badge-primary" style="float:right">${consumer.statename} - ${consumer.state}</span>{#pls implement if you see this#}
                             </td>
                             <td style="text-align:right;">
-                                <span v-if="[20].includes(consumer.state)" class="far fa-stop-circle" v-on:click="stop(consumer.group + ':' + consumer.name)"></span>
-                                <span v-if="[0].includes(consumer.state)" class="far fa-play-circle" v-on:click="start(consumer.group + ':' + consumer.name)"></span>
-                                <span class="fas fa-redo" v-on:click="restart(consumer.group + ':' + consumer.name)"></span>
+                                <span  role="button" v-if="[20].includes(consumer.state)" class="far fa-stop-circle" v-on:click="stop(consumer.group + ':' + consumer.name)"></span>
+                                <span  role="button" v-if="[0].includes(consumer.state)" class="far fa-play-circle" v-on:click="start(consumer.group + ':' + consumer.name)"></span>
+                                <span  role="button" class="fas fa-redo" v-on:click="restart(consumer.group + ':' + consumer.name)"></span>
                             </td>
                         </tr>
                         </tbody>
@@ -112,7 +110,43 @@
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
 
         <script type="text/javascript">
-            class api {
+            /**
+             * This takes a log and tries to parse each line as JSON
+             * If a line is valid JSON then it is formatted nicely
+             * Otherwise the original line is user
+             *
+             * @param {String} log
+             *
+             * @return {String}
+             */
+            function formatLog(log) {
+                const parts = log.split('\n');
+
+                let formatted = '';
+
+                parts.forEach(part => {
+                    let beautified = null;
+                    try {
+                        const decoded = JSON.parse(part);
+
+                        beautified = JSON.stringify(decoded, null, 4);
+                    } catch (e) {
+                    }
+
+                    if (beautified === null) {
+                        formatted += part + '\n';
+
+                        return
+                    }
+
+                    formatted += beautified + '\n'
+
+                });
+
+                return formatted;
+            }
+
+            class Api {
                 /**
                  * @param {String} hash
                  */
@@ -174,11 +208,33 @@
                  */
                 getErrorLog(consumerName) {
                     axios.get('api/server/' + this.hash + '/getErrorLog/' + consumerName).then(response => {
-                        window.loglog = response.data
-                        console.log(response.data[0].split('}{'));
-
-                        console.log(response.data[0].split('}{'));
+                        console.log(response.data);
                     });
+                }
+
+
+                /**
+                 * @param {String} consumerName
+                 */
+                getFormattedLog(consumerName) {
+                    return new Promise((resolve, reject) => {
+                        axios.get('api/server/' + this.hash + '/getLog/' + consumerName).then(response => {
+                            if (typeof response.data[0] !== 'string') {
+                                reject('response does not contain expected data')
+                            }
+
+                            /**
+                             * @type string
+                             */
+                            let log = response.data[0];
+
+                            let formatted = formatLog(log);
+
+                            resolve(formatted)
+                        }).catch(e => {
+                            reject(e)
+                        });
+                    })
                 }
 
                 /**
@@ -196,35 +252,7 @@
                              */
                             let log = response.data[0];
 
-                            // log = log.replace(/","/g, '", "');
-                            // log = log.replace(/":"/g, '": "');
-
-                            const parts = log.split('\n');
-
-                            console.log(parts);
-                            console.log(parts.length);
-
-                            let formatted = '';
-
-                            parts.forEach(part => {
-                                let beautified = null;
-                                try {
-                                    const decoded = JSON.parse(part);
-                                    beautified = JSON.stringify(decoded, null, 4);
-
-                                    console.log(beautified);
-                                } catch (e) {
-                                }
-
-                                if (beautified === null) {
-                                    formatted += part + '\n'
-
-                                    return
-                                }
-
-                                formatted += beautified + '\n'
-
-                            })
+                            let formatted = formatLog(log);
 
                             resolve(formatted)
                         }).catch(e => {
@@ -279,7 +307,7 @@
                     },
                     methods: {
                         setup() {
-                            this.api = new api(this.nameHash);
+                            this.api = new Api(this.nameHash);
                             this.getSupervisorVersion();
                         },
                         getConsumerList() {
@@ -323,7 +351,10 @@
                             this.api.restart(consumerName);
                         },
                         getLog(consumerName) {
-                            this.api.getLog(consumerName);
+                            this.api.getFormattedLog(consumerName).then(log => {
+                                $('#logModal .log-span').text(log)
+                                $('#logModal').modal()
+                            })
                         },
                         getErrorLog(consumerName) {
                             this.api.getFormattedErrorLog(consumerName).then(log => {
