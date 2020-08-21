@@ -11,6 +11,17 @@ use Symfony\Component\Routing\Annotation\Route;
 class ServerController extends AbstractController
 {
     /**
+     * @Route("/api/server", methods={"GET"})
+     */
+    public function getServerList()
+    {
+        /** @var ServerContainer $serverContainer */
+        $serverContainer = $this->get('srebb_supervisor.server_container');
+
+        return new JsonResponse($serverContainer->getServerStackAsArray());
+    }
+
+    /**
      * @Route("/api/server/{nameHash}/consumerlist", methods={"GET"}, requirements={"nameHash"="[a-z0-9]{32}"})
      */
     public function getConsumerList(string $nameHash)

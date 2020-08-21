@@ -22,6 +22,17 @@ class ServerContainer
         return $this->serverStack;
     }
 
+    public function getServerStackAsArray()
+    {
+        $result = [];
+
+        foreach ($this->serverStack as $server) {
+            $result[$server->getNameHash()] = $server->getAsArray();
+        }
+
+        return $result;
+    }
+
     /**
      * @param string $nameHash
      *
