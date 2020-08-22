@@ -1,0 +1,25 @@
+<script type="text/x-template" id="server">
+    <ul class="list-group">
+        <li class="list-group-item" v-bind:class="[isOnline ? 'list-group-item-success' : 'list-group-item-danger']">${serverName} <span v-if="serverVersion" class="badge badge-pill badge-primary">v ${serverVersion}</span>
+            <span class="badge badge-success badge-danger control-badge" style="float:right" v-on:click="restartAll"><span class="fas fa-redo"></span> Restart all</span>
+            <span class="badge badge-success badge-success control-badge" style="float:right" v-on:click="startAll"><span class="far fa-play-circle"></span> Start all</span>
+            <span class="badge badge-success badge-dark control-badge" style="float:right" v-on:click="stopAll"><span class="far fa-stop-circle"></span> Stop all</span>
+        </li>
+        <li class="list-group-item" v-cloak>
+            <table class="table">
+                <tbody>
+                {# note for non-vue developers:
+                   <table> can only contain <tr> but not <consumer-row> therefore vue supplies the 'is' #}
+                <tr
+                        is="consumer-row"
+                        v-for="consumer in consumerList"
+                        v-bind:consumer="consumer"
+                        v-bind:server-hash="serverHash"
+                        v-bind:server-name="serverName"
+                >
+                </tr>
+                </tbody>
+            </table>
+        </li>
+    </ul>
+</script>
