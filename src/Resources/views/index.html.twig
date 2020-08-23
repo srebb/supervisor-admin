@@ -39,6 +39,9 @@
     </style>
 </head>
 <body>
+
+{% include '@SrebbSupervisor/External/body_js.twig.html' %}
+
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/vue@2.6.12/dist/vue.js"></script>
@@ -63,19 +66,22 @@
     </div>
 </div>
 
-<div id="app" class="card col-md-12 col-lg-6 hidden">
-    <server-card
-            v-for="server in serverList"
-            v-bind:key="server.hash"
-            v-bind:server-hash="server.hash"
-            v-bind:server-name="server.name"
-    ></server-card>
+
+<div id="app" class="app">
+    <div class="container-fluid">
+        <div class="row" id="server_card_container">
+            <server-card
+                    v-for="server in serverList"
+                    v-bind:key="server.hash"
+                    v-bind:server-hash="server.hash"
+                    v-bind:server-name="server.name"
+            ></server-card>
+        </div>
+    </div>
 </div>
 
 {% include '@SrebbSupervisor/vue/consumer_row.html.twig' %}
 {% include '@SrebbSupervisor/vue/server.html.twig' %}
-
-{% include '@SrebbSupervisor/External/body_js.twig.html' %}
 
 {% include '@SrebbSupervisor/js/api.html.twig' %}
 {% include '@SrebbSupervisor/js/vue.html.twig' %}
