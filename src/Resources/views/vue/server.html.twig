@@ -1,5 +1,5 @@
 <script type="text/x-template" id="server">
-    <div class="card col-md-12 col-lg-6">
+    <div class="card col-md-12 col-lg-6 p-2">
         <ul class="list-group">
             <li class="list-group-item" v-bind:class="[isOnline ? 'list-group-item-success' : 'list-group-item-danger']">${serverName} <span v-if="serverVersion" class="badge badge-pill badge-primary">v ${serverVersion}</span>
                 <span class="badge badge-success badge-danger control-badge" style="float:right" v-on:click="restartAll"><span class="fas fa-redo"></span> Restart all</span>
