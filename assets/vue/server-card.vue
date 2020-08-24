@@ -51,6 +51,8 @@ import consumerRow from './consumer-row.vue';
 export default {
     name: 'serverCard',
     components: { consumerRow },
+    // TODO: add types:
+    // props: {'serverName': String, 'serverHash': String],
     props: ['serverName', 'serverHash'],
     data() {
         return {

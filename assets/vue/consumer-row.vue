@@ -79,6 +79,8 @@ import { Api } from '../js/api';
 
 export default {
     name: 'consumerRow',
+    // TODO: add types:
+    // props: {'consumer': Object, 'serverName': String, 'serverHash': String],
     props: ['consumer', 'serverName', 'serverHash'],
     data() {
         return { api: null };

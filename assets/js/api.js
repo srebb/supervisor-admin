@@ -70,6 +70,7 @@ class Api {
         this.hash = hash;
     }
 
+    // TODO: make static
     getServerList() {
         return axios.get('api/server');
     }
