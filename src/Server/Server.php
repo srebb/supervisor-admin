@@ -115,7 +115,9 @@ class Server
                 ->tailProcessStderrLog($processInfo['group'] . ':' . $processInfo['name'], 0, 0);
         }
 
-        return $allProcessInfo;
+        $sortedProcessInfo = $this->sortProcesses($allProcessInfo);
+
+        return $sortedProcessInfo;
     }
 
     public function stopAllProcesses()
@@ -158,5 +160,14 @@ class Server
     public function getConsumerErrorLog(string $name, int $offset = -2000 , int $length = 2000)
     {
         return $this->supervisor->tailProcessStderrLog($name, $offset, $length);
+    }
+
+    private function sortProcesses($allProcessInfo)
+    {
+        $names  = array_column($allProcessInfo, 'name');
+        $groups = array_column($allProcessInfo, 'group');
+        array_multisort($groups, SORT_NATURAL, $names, SORT_NATURAL, $allProcessInfo);
+
+        return $allProcessInfo;
     }
 }
