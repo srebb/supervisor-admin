@@ -21,4 +21,4 @@ function init() {
     createApp();
 }
 
-window.addEventListener('load', init, false);
+$(init);
