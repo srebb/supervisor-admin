@@ -4,9 +4,13 @@
     "prettier": {
         "singleQuote": true,
         "tabWidth": 4,
-        "printWidth": 120
+        "printWidth": 80
+    },
+    "scripts": {
+        "build": "webpack"
     },
     "dependencies": {
+        "axios": "^0.20.0",
         "bootstrap": "4.5.*",
         "core-js": "^3.6.5",
         "css-loader": "^4.2.1",
@@ -17,6 +21,6 @@
         "vue-loader": "^15.9.3",
         "vue-template-compiler": "^2.6.11",
         "webpack": "^4.35.0",
-        "webpack-notifier": "^1.6.0"
+        "webpack-cli": "^3.3.12"
     }
 }
