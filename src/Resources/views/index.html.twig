@@ -1,166 +1,95 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <!-- Required meta tags -->
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-        {% include '@SrebbSupervisor/External/head_css.twig.html' %}
+    {% include '@SrebbSupervisor/External/head_css.twig.html' %}
 
-        <title>Adminpanel for supervisor</title>
-        <style type="text/css">
-            [v-cloak] {
-                display: none;
-            }
+    <title>Adminpanel for supervisor</title>
+    <style type="text/css">
+        [v-cloak] {
+            display: none;
+        }
 
-            .card {
-                border:none;
-            }
+        .card {
+            border: none;
+        }
 
-            .table {
-                margin-bottom: 0;
-            }
+        .table {
+            margin-bottom: 0;
+        }
 
-            .table tr:first-child td, .table tr:first-child th {
-                border-top: 0;
-            }
+        .table tr:first-child td, .table tr:first-child th {
+            border-top: 0;
+        }
 
-            .table tr:hover {
-                background: #777777;
-            }
+        .table tr:hover {
+            background: #777777;
+        }
 
-            .control-badge {
-                margin-left: 5px;
-            }
+        .control-badge {
+            margin-left: 5px;
+        }
 
-            .control-badge:hover {
-                cursor: pointer;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container-fluid">
-            <div class="row">
-            {% for server in serverStack %}
-                <div id="server_card_{{ server.getNameHash() }}" class="card col-6" v-cloak>
-                    <ul class="list-group">
-                        <li class="list-group-item" v-bind:class="[isOnline ? 'list-group-item-success' : 'list-group-item-danger']">${serverName} <span v-if="serverVersion" class="badge badge-pill badge-primary">v ${serverVersion}</span>
-                            <span class="badge badge-success badge-danger control-badge" style="float:right" v-on:click="restartAll"><span class="fas fa-redo"></span> Restart all</span>
-                            <span class="badge badge-success badge-success control-badge" style="float:right" v-on:click="startAll"><span class="far fa-play-circle"></span> Start all</span>
-                            <span class="badge badge-success badge-dark control-badge" style="float:right" v-on:click="stopAll"><span class="far fa-stop-circle"></span> Stop all</span>
-                        </li>
-                        <li class="list-group-item" v-cloak>
-                            <table class="table">
-                                <tbody>
-                                    <tr v-for="consumer in consumerList">
-                                        <th scope="row"><span class="consumer-identifier">${consumer.group}:${consumer.name}</span></th>
-                                        <td>
-                                            ${consumer.description}
-                                        </td>
-                                        <td>
-                                            <div v-on:click="getLog(consumer.group + ':' + consumer.name)">${consumer.out_log}</div>
-                                        </td>
-                                        <td>
-                                            <div v-on:click="getErrorLog(consumer.group + ':' + consumer.name)">${consumer.err_log}</div>
-                                        </td>
-                                        <td>
-                                            <span v-if="consumer.state == 0" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#stopped#}
-                                            <span v-else-if="consumer.state == 10" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#starting#}
-                                            <span v-else-if="consumer.state == 20" class="badge badge-success" style="float:right">${consumer.statename}</span> {#running#}
-                                            <span v-else-if="consumer.state == 30" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#backoff#}
-                                            <span v-else-if="consumer.state == 40" class="badge badge-warning" style="float:right">${consumer.statename}</span> {#stopping#}
-                                            <span v-else-if="consumer.state == 100" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#exited#}
-                                            <span v-else-if="consumer.state == 200" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#fatal#}
-                                            <span v-else class="badge badge-primary" style="float:right">${consumer.statename} - ${consumer.state}</span>{#pls implement if you see this#}
-                                        </td>
-                                        <td style="text-align:right;">
-                                            <span v-if="[20].includes(consumer.state)" class="far fa-stop-circle" v-on:click="stop(consumer.group + ':' + consumer.name)"></span>
-                                            <span v-if="[0].includes(consumer.state)" class="far fa-play-circle" v-on:click="start(consumer.group + ':' + consumer.name)"></span>
-                                            <span class="fas fa-redo" v-on:click="restart(consumer.group + ':' + consumer.name)"></span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </li>
-                    </ul>
-                </div>
-            {% endfor %}
+        .control-badge:hover {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+{% include '@SrebbSupervisor/External/body_js.twig.html' %}
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/vue@2.6.12/dist/vue.js"></script>
+<script src="https://unpkg.com/axios@0.20.0/dist/axios.js"></script>
+
+<div class="modal fade" id="logModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Modal title</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <pre class="log-span"></pre>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
             </div>
         </div>
+    </div>
+</div>
 
-        {% include '@SrebbSupervisor/External/body_js.twig.html' %}
 
-        <script type="text/javascript">
-            {% for server in serverStack %}
-            var server_card_{{ server.getNameHash() }} = new Vue({
-                delimiters: ['${', '}'],
-                el: '#server_card_{{ server.getNameHash() }}',
-                data: {
-                    serverName: '{{ server.getServerName() }}',
-                    nameHash: '{{ server.getNameHash() }}',
-                    consumerList: [],
-                    serverVersion: null,
-                    isOnline: false,
-                },
-                methods: {
-                    setup() {
-                        this.getSupervisorVersion();
-                    },
-                    getConsumerList() {
-                        axios.get('api/server/{{ server.getNameHash() }}/consumerlist')
-                        .then(response => {
-                            this.consumerList = response.data;
-                            this.isOnline = true;
-                            setTimeout(this.getConsumerList, 1000);
-                        })
-                        .catch(e => {
-                            this.isOnline = false;
-                            setTimeout(this.getSupervisorVersion, 1000);
-                        });
-                    },
-                    getSupervisorVersion() {
-                        axios.get('api/server/{{ server.getNameHash() }}/supervisorversion')
-                        .then(response => {
-                            this.serverVersion = response.data;
-                            this.getConsumerList();
-                        })
-                        .catch(e => {
-                            setTimeout(this.getSupervisorVersion, 3000);
-                        });
-                    },
-                    stopAll() {
-                        axios.post('api/server/{{ server.getNameHash() }}/stopAll').then(response => {});
-                    },
-                    startAll() {
-                        axios.post('api/server/{{ server.getNameHash() }}/startAll').then(response => {});
-                    },
-                    restartAll() {
-                        axios.post('api/server/{{ server.getNameHash() }}/restartAll').then(response => {});
-                    },
-                    stop(consumerName) {
-                        axios.post('api/server/{{ server.getNameHash() }}/stop/' + consumerName).then(response => {});
-                    },
-                    start(consumerName) {
-                        axios.post('api/server/{{ server.getNameHash() }}/start/' + consumerName).then(response => {});
-                    },
-                    restart(consumerName) {
-                        axios.post('api/server/{{ server.getNameHash() }}/restart/' + consumerName).then(response => {});
-                    },
-                    getLog(consumerName) {
-                        axios.get('api/server/{{ server.getNameHash() }}/getLog/' + consumerName).then(response => {
-                            console.log(response.data);
-                        });
-                    },
-                    getErrorLog(consumerName) {
-                        axios.get('api/server/{{ server.getNameHash() }}/getErrorLog/' + consumerName).then(response => {
-                            console.log(response.data);
-                        });
-                    },
-                }
-            })
+<div id="app" class="app">
+    <div class="container-fluid">
+        <div class="row" id="server_card_container">
+            <server-card
+                    v-for="server in serverList"
+                    v-bind:key="server.hash"
+                    v-bind:server-hash="server.hash"
+                    v-bind:server-name="server.name"
+            ></server-card>
+        </div>
+    </div>
+</div>
 
-            server_card_{{ server.getNameHash() }}.setup();
-            {% endfor %}
-        </script>
-    </body>
+{% include '@SrebbSupervisor/vue/consumer_row.html.twig' %}
+{% include '@SrebbSupervisor/vue/server.html.twig' %}
+
+{% include '@SrebbSupervisor/js/api.html.twig' %}
+{% include '@SrebbSupervisor/js/vue.html.twig' %}
+
+
+
+<script type="text/javascript">
+
+</script>
+</body>
 </html>
