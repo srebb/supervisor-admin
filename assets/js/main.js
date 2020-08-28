@@ -1,58 +1,24 @@
-import { Api } from './api';
+import jquery from 'jquery';
 
-import Vue from 'vue/dist/vue.js';
+// make jquery globally available for all other packages. see:
+// https://symfony.com/doc/current/frontend/encore/legacy-applications.html
+global.$ = jquery;
+global.jQuery = jquery;
 
-import serverCard from './../vue/server-card.vue';
-import consumerRow from './../vue/consumer-row.vue';
+import 'bootstrap';
 
-const app = new Vue({
-    el: '#app',
-    components: { serverCard },
-    data: {
-        serverList: [],
-        api: null,
-    },
-    created() {
-        this.setup();
-    },
-    methods: {
-        setup() {
-            this.updateServerList();
-        },
-        updateServerList() {
-            this.api = new Api();
+import { createApp } from './app';
 
-            const _this = this;
+let initialized = false;
 
-            this.api.getServerList().then(
-                (response) => {
-                    const serverList = response.data;
+function init() {
+    if (initialized) {
+        return;
+    }
 
-                    const hashes = Object.keys(serverList);
+    initialized = true;
 
-                    let server = [];
+    createApp();
+}
 
-                    hashes.forEach((hash) => {
-                        const currentServer = {
-                            hash: serverList[hash].nameHash,
-                            name: serverList[hash].serverName,
-                        };
-
-                        server.push(currentServer);
-                    });
-
-                    this.serverList = server;
-
-                    setTimeout(function () {
-                        _this.updateServerList();
-                    }, 5000);
-                },
-                (e) => {
-                    setTimeout(function () {
-                        _this.updateServerList();
-                    }, 5000);
-                }
-            );
-        },
-    },
-});
+window.addEventListener('load', init, false);
