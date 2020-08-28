@@ -16,10 +16,12 @@ class Server
      * @var string
      */
     private $serverName;
+    
     /**
      * @var string
      */
     private $nameHash;
+    
     /**
      * @var string
      */
@@ -41,7 +43,7 @@ class Server
 
     private function createSupervisor()
     {
-        $guzzleClient = new GuzzleClient();
+        $guzzleClient = new GuzzleClient(['timeout' => 10]);
 
         $client = new Client(
             sprintf('http://%s:9001/RPC2', $this->host),
@@ -54,6 +56,16 @@ class Server
         $connector = new XmlRpc($client);
 
         return new Supervisor($connector);
+    }
+
+    public function getAsArray()
+    {
+        return [
+            'serverName' => $this->serverName,
+            'nameHash'   => $this->nameHash,
+            'host'       => $this->host,
+            'supervisor' => $this->supervisor,
+        ];
     }
 
     /**
@@ -87,7 +99,25 @@ class Server
 
     public function getAllProcessInfo()
     {
-        return $this->supervisor->getAllProcessInfo();
+        $allProcessInfo = $this->supervisor->getAllProcessInfo();
+
+        foreach ($allProcessInfo as $key => $processInfo) {
+            $allProcessInfo[$key]['uptime_seconds'] = $processInfo['now'] - $processInfo['start'];
+
+            $description                           = $processInfo['description'] ?? [];
+            $descriptionParts                      = explode(',', $description);
+            $allProcessInfo[$key]['description_0'] = $descriptionParts[0] ?? '';
+            $allProcessInfo[$key]['description_1'] = $descriptionParts[1] ?? '';
+            $allProcessInfo[$key]['description_2'] = $descriptionParts[2] ?? '';
+            $allProcessInfo[$key]['out_log']       = $this->supervisor
+                ->tailProcessStdoutLog($processInfo['group'] . ':' . $processInfo['name'], 0, 0);
+            $allProcessInfo[$key]['err_log']       = $this->supervisor
+                ->tailProcessStderrLog($processInfo['group'] . ':' . $processInfo['name'], 0, 0);
+        }
+
+        $sortedProcessInfo = $this->sortProcesses($allProcessInfo);
+
+        return $sortedProcessInfo;
     }
 
     public function stopAllProcesses()
@@ -120,5 +150,24 @@ class Server
     public function startProcess($processName)
     {
         return $this->supervisor->startProcess($processName);
+    }
+
+    public function getConsumerLog(string $name, int $offset = -2000 , int $length = 2000)
+    {
+        return $this->supervisor->tailProcessStdoutLog($name, $offset, $length);
+    }
+
+    public function getConsumerErrorLog(string $name, int $offset = -2000 , int $length = 2000)
+    {
+        return $this->supervisor->tailProcessStderrLog($name, $offset, $length);
+    }
+
+    private function sortProcesses($allProcessInfo)
+    {
+        $names  = array_column($allProcessInfo, 'name');
+        $groups = array_column($allProcessInfo, 'group');
+        array_multisort($groups, SORT_NATURAL, $names, SORT_NATURAL, $allProcessInfo);
+
+        return $allProcessInfo;
     }
 }
