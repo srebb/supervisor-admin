@@ -44,7 +44,7 @@
             {% for server in serverStack %}
                 <div id="server_card_{{ server.getNameHash() }}" class="card col-6" v-cloak>
                     <ul class="list-group">
-                        <li class="list-group-item" v-bind:class="[isOnline ? 'list-group-item-success' : 'list-group-item-danger']">${serverName} <span v-if="serverVersion" class="badge badge-pill badge-primary">${serverVersion}</span>
+                        <li class="list-group-item" v-bind:class="[isOnline ? 'list-group-item-success' : 'list-group-item-danger']">${serverName} <span v-if="serverVersion" class="badge badge-pill badge-primary">v ${serverVersion}</span>
                             <span class="badge badge-success badge-danger control-badge" style="float:right" v-on:click="restartAll"><span class="fas fa-redo"></span> Restart all</span>
                             <span class="badge badge-success badge-success control-badge" style="float:right" v-on:click="startAll"><span class="far fa-play-circle"></span> Start all</span>
                             <span class="badge badge-success badge-dark control-badge" style="float:right" v-on:click="stopAll"><span class="far fa-stop-circle"></span> Stop all</span>
@@ -56,6 +56,12 @@
                                         <th scope="row"><span class="consumer-identifier">${consumer.group}:${consumer.name}</span></th>
                                         <td>
                                             ${consumer.description}
+                                        </td>
+                                        <td>
+                                            <div v-on:click="getLog(consumer.group + ':' + consumer.name)">${consumer.out_log}</div>
+                                        </td>
+                                        <td>
+                                            <div v-on:click="getErrorLog(consumer.group + ':' + consumer.name)">${consumer.err_log}</div>
                                         </td>
                                         <td>
                                             <span v-if="consumer.state == 0" class="badge badge-dark" style="float:right">${consumer.statename}</span> {#stopped#}
@@ -139,6 +145,16 @@
                     },
                     restart(consumerName) {
                         axios.post('api/server/{{ server.getNameHash() }}/restart/' + consumerName).then(response => {});
+                    },
+                    getLog(consumerName) {
+                        axios.get('api/server/{{ server.getNameHash() }}/getLog/' + consumerName).then(response => {
+                            console.log(response.data);
+                        });
+                    },
+                    getErrorLog(consumerName) {
+                        axios.get('api/server/{{ server.getNameHash() }}/getErrorLog/' + consumerName).then(response => {
+                            console.log(response.data);
+                        });
                     },
                 }
             })
