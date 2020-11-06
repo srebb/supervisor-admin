@@ -8,10 +8,10 @@ class ServerContainer
 {
     private $serverStack = [];
 
-    public function __construct(ServerFactory $serverFactory, array $serverList = [])
+    public function __construct(ServerFactory $serverFactory, array $globalUpdateInterval = [], array $serverList = [])
     {
         foreach ($serverList as $serverName => $serverData) {
-            $server = $serverFactory->getServer($serverName, $serverData);
+            $server = $serverFactory->getServer($serverName, $serverData, $globalUpdateInterval);
 
             $this->serverStack[$server->getNameHash()] = $server;
         }

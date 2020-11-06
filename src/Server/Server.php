@@ -32,11 +32,19 @@ class Server
      */
     private $supervisor;
 
-    public function __construct(string $serverName, array $serverData)
+    /**
+     * @var Supervisor
+     */
+    private $updateInterval;
+
+    public function __construct(string $serverName, array $serverData, array $globalUpdateInterval)
     {
-        $this->serverName = $serverName;
-        $this->nameHash   = md5($serverName);
-        $this->host       = $serverData['host'];
+        $updateInterval = array_merge($globalUpdateInterval, $serverData['updateInterval'] ?? []);
+
+        $this->serverName     = $serverName;
+        $this->nameHash       = md5($serverName);
+        $this->host           = $serverData['host'];
+        $this->updateInterval = $updateInterval;
 
         $this->supervisor = $this->createSupervisor();
     }
@@ -61,10 +69,11 @@ class Server
     public function getAsArray()
     {
         return [
-            'serverName' => $this->serverName,
-            'nameHash'   => $this->nameHash,
-            'host'       => $this->host,
-            'supervisor' => $this->supervisor,
+            'serverName'     => $this->serverName,
+            'nameHash'       => $this->nameHash,
+            'host'           => $this->host,
+            'supervisor'     => $this->supervisor,
+            'updateInterval' => $this->updateInterval,
         ];
     }
 
@@ -90,6 +99,14 @@ class Server
     public function getHost(): string
     {
         return $this->host;
+    }
+
+    /**
+     * @return array
+     */
+    public function getUpdateInterval(): array
+    {
+        return $this->updateInterval;
     }
 
     public function getSupervisorVersion(): string
