@@ -165,4 +165,19 @@ class ServerController extends AbstractController
         }
         return new JsonResponse($log);
     }
+
+
+
+    /**
+     * @Route("/api/server/{nameHash}/loginfo", methods={"GET"}, requirements={"nameHash"="[a-z0-9]{32}"})
+     */
+    public function getLogInfo(string $nameHash)
+    {
+        /** @var ServerContainer $serverContainer */
+        $serverContainer = $this->get('srebb_supervisor.server_container');
+
+        $server = $serverContainer->getServerByNameHash($nameHash);
+
+        return new JsonResponse($server->getAllProcessLogInfo());
+    }
 }

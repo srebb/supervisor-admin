@@ -109,6 +109,20 @@ class Server
             $allProcessInfo[$key]['description_0'] = $descriptionParts[0] ?? '';
             $allProcessInfo[$key]['description_1'] = $descriptionParts[1] ?? '';
             $allProcessInfo[$key]['description_2'] = $descriptionParts[2] ?? '';
+            $allProcessInfo[$key]['out_log']       = null;
+            $allProcessInfo[$key]['err_log']       = null;
+        }
+
+        $sortedProcessInfo = $this->sortProcesses($allProcessInfo);
+
+        return $sortedProcessInfo;
+    }
+
+    public function getAllProcessLogInfo()
+    {
+        $allProcessInfo = $this->supervisor->getAllProcessInfo();
+
+        foreach ($allProcessInfo as $key => $processInfo) {
             $allProcessInfo[$key]['out_log']       = $this->supervisor
                 ->tailProcessStdoutLog($processInfo['group'] . ':' . $processInfo['name'], 0, 0);
             $allProcessInfo[$key]['err_log']       = $this->supervisor
