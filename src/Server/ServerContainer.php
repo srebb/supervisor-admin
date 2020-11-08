@@ -26,6 +26,7 @@ class ServerContainer
     {
         $result = [];
 
+        /** @var Server $server*/
         foreach ($this->serverStack as $server) {
             $result[$server->getNameHash()] = $server->getAsArray();
         }
