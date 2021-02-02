@@ -36,6 +36,14 @@ class Configuration implements ConfigurationInterface
                 ->integerNode('connection_timeout')
                     ->defaultValue(5)->min(0)->max(60)
                 ->end()
+
+                ->arrayNode('update_interval')->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('consumer')->defaultValue(2)->end()
+                        ->scalarNode('logs')->defaultValue(10)->end()
+                    ->end()
+                ->end()
+
                 ->arrayNode('server_list')
                     ->arrayPrototype()
                         ->children()

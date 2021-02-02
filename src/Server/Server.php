@@ -32,11 +32,19 @@ class Server
      */
     private $supervisor;
 
-    public function __construct(string $serverName, array $serverData)
+    /**
+     * @var Supervisor
+     */
+    private $updateInterval;
+
+    public function __construct(string $serverName, array $serverData, array $globalUpdateInterval)
     {
-        $this->serverName = $serverName;
-        $this->nameHash   = md5($serverName);
-        $this->host       = $serverData['host'];
+        $updateInterval = array_merge($globalUpdateInterval, $serverData['updateInterval'] ?? []);
+
+        $this->serverName     = $serverName;
+        $this->nameHash       = md5($serverName);
+        $this->host           = $serverData['host'];
+        $this->updateInterval = $updateInterval;
 
         $this->supervisor = $this->createSupervisor();
     }
@@ -61,10 +69,11 @@ class Server
     public function getAsArray()
     {
         return [
-            'serverName' => $this->serverName,
-            'nameHash'   => $this->nameHash,
-            'host'       => $this->host,
-            'supervisor' => $this->supervisor,
+            'serverName'     => $this->serverName,
+            'nameHash'       => $this->nameHash,
+            'host'           => $this->host,
+            'supervisor'     => $this->supervisor,
+            'updateInterval' => $this->updateInterval,
         ];
     }
 
@@ -92,6 +101,14 @@ class Server
         return $this->host;
     }
 
+    /**
+     * @return array
+     */
+    public function getUpdateInterval(): array
+    {
+        return $this->updateInterval;
+    }
+
     public function getSupervisorVersion(): string
     {
         return $this->supervisor->getSupervisorVersion();
@@ -109,6 +126,20 @@ class Server
             $allProcessInfo[$key]['description_0'] = $descriptionParts[0] ?? '';
             $allProcessInfo[$key]['description_1'] = $descriptionParts[1] ?? '';
             $allProcessInfo[$key]['description_2'] = $descriptionParts[2] ?? '';
+            $allProcessInfo[$key]['out_log']       = null;
+            $allProcessInfo[$key]['err_log']       = null;
+        }
+
+        $sortedProcessInfo = $this->sortProcesses($allProcessInfo);
+
+        return $sortedProcessInfo;
+    }
+
+    public function getAllProcessLogInfo()
+    {
+        $allProcessInfo = $this->supervisor->getAllProcessInfo();
+
+        foreach ($allProcessInfo as $key => $processInfo) {
             $allProcessInfo[$key]['out_log']       = $this->supervisor
                 ->tailProcessStdoutLog($processInfo['group'] . ':' . $processInfo['name'], 0, 0);
             $allProcessInfo[$key]['err_log']       = $this->supervisor

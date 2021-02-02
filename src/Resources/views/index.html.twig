@@ -65,10 +65,11 @@
     <div class="container-fluid">
         <div class="row" id="server_card_container">
             <server-card
-                    v-for="server in serverList"
-                    v-bind:key="server.hash"
-                    v-bind:server-hash="server.hash"
-                    v-bind:server-name="server.name"
+                    v-for="server in serverInfos"
+                    v-bind:key="server.nameHash"
+                    v-bind:server-hash="server.nameHash"
+                    v-bind:server-name="server.serverName"
+                    v-bind:server-update-interval="server.updateInterval"
             ></server-card>
         </div>
     </div>

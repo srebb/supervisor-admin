@@ -20,7 +20,7 @@ function createApp() {
         el: '#app',
         components: { serverCard },
         data: {
-            serverList: [],
+            serverInfos: [], // array of ServerInfo
             api: null,
         },
         created() {
@@ -28,40 +28,57 @@ function createApp() {
         },
         methods: {
             setup() {
-                this.updateServerList();
+                this.updateServerInfos();
             },
-            updateServerList() {
+            updateServerInfos() {
                 this.api = new Api();
 
                 const _this = this;
 
-                this.api.getServerList().then(
+                this.api.getServerInfos().then(
                     (response) => {
-                        const serverList = response.data;
+                        /**
+                         * response.data contains an object with all serverinfos
+                         * each server info is index by the hash of the server
+                         */
+                        const rawServerInfo = response.data;
 
-                        const hashes = Object.keys(serverList);
+                        const hashes = Object.keys(rawServerInfo);
 
-                        let server = [];
+                        let serverInfos = [];
 
                         hashes.forEach((hash) => {
-                            const currentServer = {
-                                hash: serverList[hash].nameHash,
-                                name: serverList[hash].serverName,
-                            };
+                            /** @type ServerInfo */
+                            const serverInfo = rawServerInfo[hash];
 
-                            server.push(currentServer);
+                            if (!serverInfo.updateInterval) {
+                                serverInfo.updateInterval = {
+                                    consumer: 2,
+                                    logs: 10,
+                                };
+                            }
+
+                            if (!serverInfo.updateInterval.logs) {
+                                serverInfo.updateInterval.logs = 10;
+                            }
+
+                            if (!serverInfo.updateInterval.logs) {
+                                serverInfo.updateInterval.logs = 2;
+                            }
+
+                            serverInfos.push(serverInfo);
                         });
 
-                        this.serverList = server;
+                        this.serverInfos = serverInfos;
 
                         setTimeout(function () {
-                            _this.updateServerList();
+                            _this.updateServerInfos();
                         }, 5000);
                     },
                     (e) => {
                         setTimeout(function () {
-                            _this.updateServerList();
-                        }, 5000);
+                            _this.updateServerInfos();
+                        }, 10000);
                     }
                 );
             },

@@ -15,6 +15,7 @@ services:
         class: 'Srebb\Bundle\SupervisorBundle\Server\ServerContainer'
         public: true
         bind:
+            $globalUpdateInterval: '%srebb_supervisor.update_interval%'
             $serverList: '%srebb_supervisor.server_list%'
         autowire: true
         autoconfigure: true

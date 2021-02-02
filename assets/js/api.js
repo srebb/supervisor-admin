@@ -1,6 +1,21 @@
 import axios from 'axios';
 
 /**
+ * This is the object which is returned for a singel server
+ *
+ * @typedef {Object} ServerInfo
+ *
+ * @property {String} serverName
+ * @property {String} nameHash
+ * @property {String} host The IP adress
+ * @property {Object} supervisor
+ * @property {Object} updateInterval
+ * @property {Number} updateInterval.consumer
+ * @property {Number} updateInterval.logs
+ */
+
+
+/**
  * This takes a log and tries to parse each line as JSON
  * If a line is valid JSON then it is formatted nicely
  * Otherwise the original line is user
@@ -71,7 +86,7 @@ class Api {
     }
 
     // TODO: make static
-    getServerList() {
+    getServerInfos() {
         return axios.get('api/server');
     }
 
@@ -80,6 +95,13 @@ class Api {
 
         return axios.get('api/server/' + this.hash + '/consumerlist');
     }
+
+    getLogInfo() {
+        this._assertHashIsSet();
+
+        return axios.get('api/server/' + this.hash + '/loginfo');
+    }
+
 
     getSupervisorVersion() {
         this._assertHashIsSet();

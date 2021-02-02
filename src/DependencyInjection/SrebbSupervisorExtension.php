@@ -18,8 +18,8 @@ class SrebbSupervisorExtension extends Extension
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yaml');
 
-        $container->setParameter('srebb_supervisor.test', $config);
         $container->setParameter('srebb_supervisor.server_list', $config['server_list']);
+        $container->setParameter('srebb_supervisor.update_interval', $config['update_interval']);
 
         $this->addAnnotatedClassesToCompile([
             'Srebb\\Bundle\\SupervisorBundle\\Server\\Server',
