@@ -24,6 +24,8 @@ class SrebbSupervisorExtension extends Extension
         $this->addAnnotatedClassesToCompile([
             'Srebb\\Bundle\\SupervisorBundle\\Server\\Server',
             'Srebb\\Bundle\\SupervisorBundle\\Server\\ServerFactory',
+            'Srebb\\Bundle\\SupervisorBundle\\Controller\\IndexController',
+            'Srebb\\Bundle\\SupervisorBundle\\Controller\\Api\\ServerController',
         ]);
     }
 

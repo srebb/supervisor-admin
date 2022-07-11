@@ -10,15 +10,16 @@ use Symfony\Component\Routing\Annotation\Route;
 class IndexController extends AbstractController
 {
     /**
-     * @Route("/", methods={"GET"}, name="srebb_supervisor_index")
+     * @Route(
+     *     path="/",
+     *     methods={"GET"},
+     *     name="srebb_supervisor_index"
+     * )
      *
      * @return Response
      */
-    public function index()
+    public function index(ServerContainer $serverContainer)
     {
-        /** @var ServerContainer $serverContainer */
-        $serverContainer = $this->get('srebb_supervisor.server_container');
-
         return $this->render('@SrebbSupervisor/index.html.twig', [
             'serverStack' => $serverContainer->getServerStack()
         ]);

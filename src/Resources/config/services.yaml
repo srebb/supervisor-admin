@@ -11,11 +11,14 @@ services:
 
     Srebb\Bundle\SupervisorBundle\Server\ServerFactory:
 
-    srebb_supervisor.server_container:
-        class: 'Srebb\Bundle\SupervisorBundle\Server\ServerContainer'
+    Srebb\Bundle\SupervisorBundle\Server\ServerContainer:
         public: true
         bind:
             $globalUpdateInterval: '%srebb_supervisor.update_interval%'
             $serverList: '%srebb_supervisor.server_list%'
         autowire: true
         autoconfigure: true
+
+    Srebb\Bundle\SupervisorBundle\Controller\:
+        resource: '../../Controller/'
+        tags: ['controller.service_arguments']
