@@ -4,11 +4,11 @@
     "type": "symfony-bundle",
     "description": "Fast adminpanel for supervisor",
     "require": {
-        "php": ">=7.4",
+        "php": ">=7.4|>=8.0",
         "symfony/framework-bundle": "~4.4|~5.0",
         "guzzlehttp/guzzle": "~6.5",
         "laminas/laminas-diactoros": "^2.3",
-        "lstrojny/fxmlrpc": "^0.15.0",
+        "lstrojny/fxmlrpc": "^0.22",
         "php-http/guzzle6-adapter": "^2.0",
         "php-http/message": "^1.8",
         "php-http/message-factory": "^1.0",
