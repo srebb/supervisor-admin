@@ -3,6 +3,7 @@
     "license": "MIT",
     "type": "symfony-bundle",
     "description": "Fast adminpanel for supervisor",
+    "abandoned": true,
     "require": {
         "php": ">=7.4|>=8.0",
         "symfony/framework-bundle": "~4.4|~5.0",
